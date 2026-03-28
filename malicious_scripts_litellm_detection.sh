@@ -45,7 +45,7 @@ for user_home in /Users/*; do
 done
 
 if [[ ${#findings[@]} -eq 0 ]]; then
-    echo "<result>Not Installed</result>"
+    echo "<result>Not Detected</result>"
 else
     # Join findings with semicolon separator
     result=$(IFS=';'; echo "${findings[*]}")

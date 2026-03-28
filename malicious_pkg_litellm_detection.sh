@@ -65,6 +65,8 @@ for user_home in /Users/*; do
         "${user_home}"/anaconda3/envs/*/lib/python*/site-packages
         "${user_home}"/anaconda3/lib/python*/site-packages
         "${user_home}"/.conda/envs/*/lib/python*/site-packages
+        "${user_home}"/.local/share/uv/tools/*/lib/python*/site-packages
+        "${user_home}"/.local/share/uv/python/*/lib/python*/site-packages
     )
     
     for d in "${user_paths[@]}"; do
@@ -72,10 +74,19 @@ for user_home in /Users/*; do
             check_litellm "$d"
         fi
     done
+
+    # Search for local .venv and venv directories within a limited depth
+    while IFS= read -r -d '' venv_dir; do
+        for sp in "$venv_dir"/lib/python*/site-packages; do
+            if [[ -d "$sp" ]]; then
+                check_litellm "$sp"
+            fi
+        done
+    done < <(find "$user_home" -maxdepth 4 -type d \( -name ".venv" -o -name "venv" \) -print0 2>/dev/null)
 done
 
 if [[ ${#findings[@]} -eq 0 ]]; then
-    echo "<result>Not Installed</result>"
+    echo "<result>Not Detected</result>"
 else
     # Join findings with semicolon separator
     result=$(IFS=';'; echo "${findings[*]}")
